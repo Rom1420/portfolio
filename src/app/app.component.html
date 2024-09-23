@@ -2,8 +2,9 @@
   <nav-bar></nav-bar>
 </div>
 
-<div class="main-container">
-  <section class="snap-section">
+<div #mainContainer class="main-container">
+  <p class="debug">{{activeComponentName}}</p>
+  <section class="snap-section home-section">
     <div class="profil-container">
       <p class="intro-text">Hi, my name is</p>
       <div class="name-container">
@@ -20,8 +21,9 @@
     </div>
     <planet id="canvaBox"></planet>
   </section>
-  <section class="snap-section empty-section">
+  <section class="snap-section projects-section">
     <conveyor-belt id="conveyorBelt"></conveyor-belt>
+    <project-navbar></project-navbar>
   </section>
   <section class="snap-section">
     <div class="content">
@@ -36,8 +38,4 @@
       <h2>Contact</h2>
     </div>
   </section>
-</div>
-
-<div class="scroll-info">
-  <p>Scroll Position: {{ scrollPosition }}</p>
 </div>

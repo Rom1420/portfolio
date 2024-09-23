@@ -21,6 +21,7 @@
     "@types/three": "^0.163.0",
     "rxjs": "~7.8.0",
     "save-dev": "^0.0.1-security",
+    "stats.js": "^0.17.0",
     "three": "^0.163.0",
     "three-addons": "^1.2.0",
     "tslib": "^2.3.0",

@@ -16,12 +16,13 @@ export class PlanetComponent implements OnInit, OnDestroy {
   private animationId!: number;
   private observer!: MutationObserver;
 
+  componentName: string = 'PlanetComponent';
+
   ngOnInit() {
-    this.createThreeJsScene();
-    this.addMutationObserver();
   }
 
   createThreeJsScene(): void {
+    console.log("create three js scene planet")
     const canvasContainer = document.getElementById('canvas-container');
     const canvas = document.getElementById('canvas-box') as HTMLCanvasElement;
 
@@ -45,7 +46,7 @@ export class PlanetComponent implements OnInit, OnDestroy {
     
     const loader = new GLTFLoader();
     loader.load(
-      'assets/planet.gltf',
+      'assets/models/planet.gltf',
       (gltf) => {
         const model = gltf.scene;
         model.rotation.x = Math.PI / 2; 
@@ -79,6 +80,7 @@ export class PlanetComponent implements OnInit, OnDestroy {
 
           // Gére le redimensionnement de la fenêtre
           window.addEventListener('resize', this.onWindowResize.bind(this));
+          this.setVisibility(true);
         }
       },
       (xhr) => {
@@ -89,7 +91,7 @@ export class PlanetComponent implements OnInit, OnDestroy {
       }
     );
   }
-
+/** 
   addMutationObserver(): void {
     const targetNode = document.getElementById('canvas-container');
     if (!targetNode) return;
@@ -98,8 +100,9 @@ export class PlanetComponent implements OnInit, OnDestroy {
       for (const mutation of mutationsList) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
           const element = mutation.target as HTMLElement;
-          if (element.classList.contains('hidden')) {
+          if (element.classList.contains('invisible')) {
             this.cleanupScene();
+            console.log("clean up")
           } else {
             this.createThreeJsScene();
           }
@@ -108,7 +111,7 @@ export class PlanetComponent implements OnInit, OnDestroy {
     });
 
     this.observer.observe(targetNode, { attributes: true });
-  }
+  }*/
 
   onWindowResize(): void {
     const canvasContainer = document.getElementById('canvas-container');
@@ -120,6 +123,7 @@ export class PlanetComponent implements OnInit, OnDestroy {
   }
 
   cleanupScene(): void {
+    this.setVisibility(false);/**
     if (this.scene) {
       this.scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
@@ -143,11 +147,24 @@ export class PlanetComponent implements OnInit, OnDestroy {
     }
     if (this.observer) {
       this.observer.disconnect();
-    }
+    } */
   }
 
   ngOnDestroy(): void {
     this.cleanupScene();
     window.removeEventListener('resize', this.onWindowResize);
+  }
+
+  setVisibility(isVisible: boolean): void {
+    const element = document.getElementById('canvas-container');
+    if (element) {
+      if (isVisible) {
+        element.classList.add('visible');
+        element.classList.remove('invisible');
+      } else {
+        element.classList.add('invisible');
+        element.classList.remove('visible');
+      }
+    }
   }
 }

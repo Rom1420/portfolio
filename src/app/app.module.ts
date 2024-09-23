@@ -8,6 +8,7 @@ import { NavBarComponent } from './components/nav-bar/nav-bar.component';
 import { ScrollComponent } from './components/scroll/scroll.component';
 import { ScrollService } from './services/scroll.service';
 import { ConveyorBeltComponent } from './components/conveyor-belt/conveyor-belt.component';
+import { ProjectNavbarComponent } from './components/project-navbar/project-navbar.component';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { ConveyorBeltComponent } from './components/conveyor-belt/conveyor-belt.
     PlanetComponent,
     NavBarComponent,
     ScrollComponent,
-    ConveyorBeltComponent
+    ConveyorBeltComponent,
+    ProjectNavbarComponent,
   ],
   providers: [ScrollService],
   bootstrap: [AppComponent],

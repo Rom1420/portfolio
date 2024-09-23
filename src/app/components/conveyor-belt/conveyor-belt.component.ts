@@ -1,6 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { Project } from '../../models/projects-model';
+import { ProjectDataService } from '../../services/project.service';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
+
+
 
 @Component({
   selector: 'conveyor-belt',
@@ -15,9 +21,14 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
   private animationId!: number;
   private observer!: MutationObserver;
 
+  project$ : Observable<Project> | undefined;
+
+  componentName: string = 'ConveyorBeltComponent';
+
+  constructor(private projectDataService: ProjectDataService) { }
+
   ngOnInit() {
-    this.createThreeJsScene();
-    this.addMutationObserver();
+    this.project$ = this.projectDataService.project$;
   }
 
   createThreeJsScene(): void {
@@ -30,46 +41,47 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
 
     this.scene = new THREE.Scene();
 
-    const ambientLight = new THREE.AmbientLight(0x5496bf, 1);
-    this.scene.add(ambientLight);
-
-    const pointLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    pointLight.position.set(5, 10, 7.5);
-    this.scene.add(pointLight);
-
-    const directionalLight = new THREE.DirectionalLight(0x5496bf, 0.8);
-    directionalLight.position.set(5, 10, 7.5);
-    this.scene.add(directionalLight);
-
     // Configure le rendu
     this.renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       alpha: true,
-      antialias: true
+      antialias: true,
+      preserveDrawingBuffer: true
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.setSize(canvasContainer.offsetWidth, canvasContainer.offsetHeight);
 
+    // Ajouter le code pour l'environnement et le rendu
+    const environment = new RoomEnvironment();
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = pmremGenerator.fromScene(environment).texture;
+
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1; 
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.shadowMap.enabled = true;
+
     const clock = new THREE.Clock();
 
     const loader = new GLTFLoader();
     loader.load(
-      'assets/conveyor-belt.gltf',
+      'assets/models/planet.gltf',
       (gltf) => {
         const model = gltf.scene;
-        model.rotation.x = Math.PI / 2;
-        this.scene.add(model);
+        this.scene.add(model);  
 
         // Récupère la caméra du modèle
         this.camera = gltf.cameras[0] as THREE.PerspectiveCamera;
-        this.camera.position.set(22.5, 8.5, 21);
         if (this.camera) {
           // Utilise la caméra du modèle
           this.camera.aspect = canvasContainer.offsetWidth / canvasContainer.offsetHeight;
           this.camera.updateProjectionMatrix();
 
-          this.renderer.render(this.scene, this.camera);
+          this.mixer = new THREE.AnimationMixer(model);
+            gltf.animations.forEach((clip) => {
+            this.mixer.clipAction(clip).play();
+          });
 
           // Gère le redimensionnement de la fenêtre
           window.addEventListener('resize', this.onWindowResize.bind(this));
@@ -83,7 +95,7 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
       }
     );
   }
-
+/**
   addMutationObserver(): void {
     const targetNode = document.getElementById('conveyor-canvas-container');
     if (!targetNode) return;
@@ -92,7 +104,7 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
       for (const mutation of mutationsList) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
           const element = mutation.target as HTMLElement;
-          if (element.classList.contains('hidden')) {
+          if (element.classList.contains('invisible')) {
             this.cleanupScene();
           } else {
             this.createThreeJsScene();
@@ -102,7 +114,7 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
     });
 
     this.observer.observe(targetNode, { attributes: true });
-  }
+  }*/
 
   onWindowResize(): void {
     const canvasContainer = document.getElementById('conveyor-canvas-container');
@@ -113,7 +125,7 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
     }
   }
 
-  cleanupScene(): void {
+  cleanupScene(): void {/**
     if (this.scene) {
       this.scene.traverse((object) => {
         if (object instanceof THREE.Mesh) {
@@ -137,11 +149,29 @@ export class ConveyorBeltComponent implements OnInit, OnDestroy {
     }
     if (this.observer) {
       this.observer.disconnect();
-    }
+    } */
   }
 
   ngOnDestroy(): void {
     this.cleanupScene();
     window.removeEventListener('resize', this.onWindowResize);
   }
+
+  animate(clock: THREE.Clock): void {
+  this.animationId = requestAnimationFrame(() => this.animate(clock));
+
+  const delta = clock.getDelta();
+
+  // Met à jour l'AnimationMixer pour faire avancer l'animation
+  if (this.mixer) {
+    this.mixer.update(delta);
+  }
+
+  // Rendu de la scène
+  if (this.renderer && this.scene && this.camera) {
+    this.renderer.render(this.scene, this.camera);
+  }
 }
+
+}
+
